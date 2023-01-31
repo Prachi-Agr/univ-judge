@@ -4,6 +4,7 @@ import torch
 
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader, RandomSampler, DistributedSampler, SequentialSampler
+from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import Dataset
 import glob
 import os
@@ -60,16 +61,47 @@ def get_loader(args):
                                    train=False,
                                    download=True,
                                    transform=transform_test) if args.local_rank in [-1, 0] else None
+
     elif args.dataset == "hymenoptera":
         data_dir = "hymenoptera_data"
         trainset = datasets.ImageFolder(os.path.join(data_dir, 'train'), transform_train)
         testset = datasets.ImageFolder(os.path.join(data_dir, 'val'), transform_test) if args.local_rank in [-1, 0] else None
 
+    # Directly returns train and test loaders for word association tastk instead only train and test set sunlike other if/else statements above
     elif args.dataset == "word_assoc":
-        trainset = Word_Association('/n/holylfs05/LABS/pfister_lab/Lab/coxfs01/pfister_lab2/Lab/pagrawal/klab/ViT_universaljudge/Datasets/word_assoc/cues', 
+        batch_size=4
+        validation_split = .25
+        shuffle_dataset = True
+        random_seed= 42
+
+        data = Word_Association('/n/holylfs05/LABS/pfister_lab/Lab/coxfs01/pfister_lab2/Lab/pagrawal/klab/ViT_universaljudge/Datasets/word_assoc/cues', 
         '/n/holylfs05/LABS/pfister_lab/Lab/coxfs01/pfister_lab2/Lab/pagrawal/klab/ViT_universaljudge/Datasets/word_assoc/associations'
         )          
-        # add testing_data also                  
+
+        dataset_size = len(data)
+        indices = list(range(dataset_size))
+        split = int(np.floor(validation_split * dataset_size))
+        if shuffle_dataset :
+            np.random.seed(random_seed)
+            np.random.shuffle(indices)
+
+        train_indices, val_indices = indices[split:], indices[:split]
+
+        # Creating PT data samplers and loaders:
+        train_sampler = SubsetRandomSampler(train_indices)
+        valid_sampler = SubsetRandomSampler(val_indices)
+        train_loader = DataLoader(data, 
+                             batch_size=batch_size, 
+                             sampler=train_sampler,
+                             shuffle=True,
+                             pin_memory=True)
+
+        test_loader = DataLoader(data, 
+                             batch_size=batch_size, 
+                             shuffle=True,
+                             pin_memory=True)   
+
+        return train_loader, test_loader
         
     else:
         trainset = datasets.CIFAR100(root="./data",
@@ -86,27 +118,32 @@ def get_loader(args):
     train_sampler = RandomSampler(trainset) if args.local_rank == -1 else DistributedSampler(trainset)
     # test_sampler = SequentialSampler(testset)    #uncomment later when split into train and test
 
-    if(args.dataset=="word_assoc"):
-        batch_size=4
-        train_loader = DataLoader(trainset, 
-                             batch_size=batch_size, 
-                             shuffle=True,
-                             pin_memory=True)
-        test_loader = DataLoader(trainset, 
-                             batch_size=batch_size, 
-                             shuffle=True,
-                             pin_memory=True)                       # change test_loader , have a split of training and test 
-
-    else:
-        train_loader = DataLoader(trainset,
-                                sampler=train_sampler,
-                                batch_size=args.train_batch_size,
-                                num_workers=4,
-                                pin_memory=True)
-        test_loader = DataLoader(testset,
-                                sampler=test_sampler,
-                                batch_size=args.eval_batch_size,
-                                num_workers=4,
-                                pin_memory=True) if testset is not None else None
+    train_loader = DataLoader(trainset,
+                            sampler=train_sampler,
+                            batch_size=args.train_batch_size,
+                            num_workers=4,
+                            pin_memory=True)
+    test_loader = DataLoader(testset,
+                            sampler=test_sampler,
+                            batch_size=args.eval_batch_size,
+                            num_workers=4,
+                            pin_memory=True) if testset is not None else None
 
     return train_loader, test_loader
+
+
+"""
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X,y ,
+                                   random_state=104, 
+                                   test_size=0.25, 
+                                   shuffle=True)
+
+X_train = torch.tensor(X_train, dtype=torch.float32)
+X_test = torch.tensor(X_test, dtype=torch.float32)
+y_train = torch.tensor(y_train, dtype=torch.float32)
+y_test = torch.tensor(y_test, dtype=torch.float32)
+
+
+"""
