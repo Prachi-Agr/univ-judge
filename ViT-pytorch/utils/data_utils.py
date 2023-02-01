@@ -93,12 +93,11 @@ def get_loader(args):
         train_loader = DataLoader(data, 
                              batch_size=batch_size, 
                              sampler=train_sampler,
-                             shuffle=True,
                              pin_memory=True)
 
         test_loader = DataLoader(data, 
                              batch_size=batch_size, 
-                             shuffle=True,
+                             sampler=valid_sampler,
                              pin_memory=True)   
 
         return train_loader, test_loader
@@ -134,16 +133,12 @@ def get_loader(args):
 
 """
 from sklearn.model_selection import train_test_split
-
 X_train, X_test, y_train, y_test = train_test_split(X,y ,
                                    random_state=104, 
                                    test_size=0.25, 
                                    shuffle=True)
-
 X_train = torch.tensor(X_train, dtype=torch.float32)
 X_test = torch.tensor(X_test, dtype=torch.float32)
 y_train = torch.tensor(y_train, dtype=torch.float32)
 y_test = torch.tensor(y_test, dtype=torch.float32)
-
-
 """

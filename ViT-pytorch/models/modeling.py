@@ -258,7 +258,8 @@ class Transformer(nn.Module):
         # self.embeddings = Embeddings(config, img_size=img_size)
         self.embedding = torch.nn.Embedding(23002, config.hidden_size)  # for word assoc
         self.encoder = Encoder(config, vis)
-        self.position_embeddings = nn.Parameter(torch.zeros(1, 401+1, config.hidden_size))  # cue tokens + sep + assoc tokens = 401
+        # self.position_embeddings = nn.Parameter(torch.zeros(1, 401+1, config.hidden_size))  # matrix of zeroes used in ViT , cue tokens + sep + assoc tokens = 401
+        self.position_embeddings = torch.nn.Embedding(401+1, config.hidden_size)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, config.hidden_size))
         self.dropout = Dropout(config.transformer["dropout_rate"])
     # def forward(self, input_ids):
@@ -277,7 +278,11 @@ class Transformer(nn.Module):
         # cls_tokens = cls_tokens.to('cuda')
         embeddings = torch.cat((cls_tokens, embeddings), dim=1)
         print('embedding size after adding cls token', embeddings.size())
-        embedding_output = embeddings + self.position_embeddings
+        pos_tokens = torch.arange(0, 401+1, dtype=torch.int32)
+        pos_tokens = pos_tokens.expand(B, -1).cuda()
+        pos_embedding = self.position_embeddings(pos_tokens)
+        print('position embedding', pos_embedding.size())
+        embedding_output = embeddings + pos_embedding
         print('embedding size after adding pos embedding', embedding_output.size())
         embedding_output = self.dropout(embedding_output)
 
@@ -304,8 +309,8 @@ class VisionTransformer(nn.Module):
         print('logits', logits.size(), logits)
         if labels is not None:
             labels = labels.long()
-            print('labels', labels.size(), labels)
-            print('logits view', logits.view(-1, self.num_classes), 'labels', labels.view(-1) )
+            # print('labels', labels.size(), labels)
+            # print('logits view', logits.view(-1, self.num_classes), 'labels', labels.view(-1) )
             loss_fct = CrossEntropyLoss()
             loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
             return loss
