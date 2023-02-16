@@ -313,7 +313,7 @@ class VisionTransformer(nn.Module):
         num_embeddings = 23002
         x, attn_weights = self.transformer(input1, input2, sep, num_embeddings)
         logits = self.head(x[:, 0])
-        print('logits', logits.size(), logits)
+        #print('logits', logits.size(), logits)
         if labels is not None:
             labels = labels.long()
             # print('labels', labels.size(), labels)
