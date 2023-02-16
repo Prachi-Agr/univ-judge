@@ -267,7 +267,13 @@ class Transformer(nn.Module):
         # print('input ids:', input_ids, input_ids.size())
         # embedding_output = self.embeddings(input_ids)
         # print('embedding output:', embedding_output.size())
+
         ''' Word association embedding input '''
+        # RuntimeError: Expected tensor for argument #1 'indices' to have scalar type Long; but got torch.cuda.IntTensor instead (while checking arguments for embedding)
+        input1 = torch.tensor(input1).to(device).long()
+        input2 = torch.tensor(input2).to(device).long()
+        separator = torch.tensor(separator).to(device).long()
+
         cue_embedding = self.embedding(input1)
         assoc_embedding = self.embedding(input2)
         sep_embedding = self.embedding(separator)
