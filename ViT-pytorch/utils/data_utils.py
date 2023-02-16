@@ -74,8 +74,8 @@ def get_loader(args):
         shuffle_dataset = True
         random_seed= 42
 
-        data = Word_Association('/n/holylfs05/LABS/pfister_lab/Lab/coxfs01/pfister_lab2/Lab/pagrawal/klab/ViT_universaljudge/Datasets/word_assoc/cues', 
-        '/n/holylfs05/LABS/pfister_lab/Lab/coxfs01/pfister_lab2/Lab/pagrawal/klab/ViT_universaljudge/Datasets/word_assoc/associations'
+        data = Word_Association('/home/brandon/univ-judge/word_assoc/cues', 
+        '/home/brandon/univ-judge/word_assoc/associations'
         )          
 
         dataset_size = len(data)
