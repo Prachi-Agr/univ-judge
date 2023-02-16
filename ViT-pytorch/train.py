@@ -240,6 +240,7 @@ def train(args, model):
                     if best_acc < accuracy:
                         save_model(args, model)
                         best_acc = accuracy
+                        print(best_acc)
                     model.train()
 
                 if global_step % t_total == 0:
