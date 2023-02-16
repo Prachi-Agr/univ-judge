@@ -275,7 +275,7 @@ def main():
     parser.add_argument("--train_batch_size", default=64, type=int,
                         help="Total batch size for training.")
     parser.add_argument("--eval_batch_size", default=64, type=int,
-                        help="Total batch size for eval.")
+                        help="detach batch size for eval.")
     parser.add_argument("--eval_every", default=100, type=int,
                         help="Run prediction on validation set every so many steps."
                              "Will always run one evaluation at the end of training.")
@@ -315,7 +315,7 @@ def main():
 
     # Setup CUDA, GPU & distributed training
     if args.local_rank == -1:
-        torch.cuda.set_device(1)
+        torch.cuda.set_device(2)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         args.n_gpu = torch.cuda.device_count()
     else:  # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
