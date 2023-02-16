@@ -283,14 +283,14 @@ class Transformer(nn.Module):
         cls_tokens = self.cls_token.expand(B, -1, -1)
         # cls_tokens = cls_tokens.to('cuda')
         embeddings = torch.cat((cls_tokens, embeddings), dim=1)
-        print('embedding size after adding cls token', embeddings.size())
+        #print('embedding size after adding cls token', embeddings.size())
         pos_tokens = torch.arange(0, 401+1, dtype=torch.int32)
         pos_tokens = pos_tokens.expand(B, -1).cuda()
         pos_tokens = torch.tensor(pos_tokens).long()
         pos_embedding = self.position_embeddings(pos_tokens)
-        print('position embedding', pos_embedding.size())
+        #print('position embedding', pos_embedding.size())
         embedding_output = embeddings + pos_embedding
-        print('embedding size after adding pos embedding', embedding_output.size())
+        #print('embedding size after adding pos embedding', embedding_output.size())
         embedding_output = self.dropout(embedding_output)
 
         encoded, attn_weights = self.encoder(embedding_output)

@@ -196,7 +196,6 @@ def train(args, model):
                               dynamic_ncols=True,
                               disable=args.local_rank not in [-1, 0])
         # for step, batch in enumerate(epoch_iterator):
-        print('Right before for loop')
         for step, batch in enumerate(epoch_iterator):
             batch = tuple(t.to(args.device) for t in batch)
             # x, y = batch
@@ -207,7 +206,7 @@ def train(args, model):
             separator = torch.ones((1), dtype=torch.int32) * (num_embeddings-2)
             separator = separator.expand(cue.shape[0], -1)
             separator = separator.to(args.device)
-            print('Cue', cue.size(), 'Assoc', assoc.size(), 'label', y.size(), 'sep', separator.size())
+            #print('Cue', cue.size(), 'Assoc', assoc.size(), 'label', y.size(), 'sep', separator.size())
 
             loss = model(cue, assoc, separator, y)
 
