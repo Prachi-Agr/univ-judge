@@ -286,6 +286,7 @@ class Transformer(nn.Module):
         print('embedding size after adding cls token', embeddings.size())
         pos_tokens = torch.arange(0, 401+1, dtype=torch.int32)
         pos_tokens = pos_tokens.expand(B, -1).cuda()
+        pos_tokens = torch.tensor(pos_tokens).long()
         pos_embedding = self.position_embeddings(pos_tokens)
         print('position embedding', pos_embedding.size())
         embedding_output = embeddings + pos_embedding
