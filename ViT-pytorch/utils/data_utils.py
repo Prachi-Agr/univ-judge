@@ -26,7 +26,7 @@ class Word_Association(Dataset):
         assoc_path = self.assoc_list[idx]
         cue_list = torch.load(cue_path)
         assoc_list = torch.load(assoc_path)
-        print(cue_list, assoc_list)
+        #print(cue_list, assoc_list)
         label = cue_path.split('/')[-1].split('.')[0].split('_')[-1]
         label = int(label)
         # make cue and assoc of length 200 each
@@ -34,7 +34,7 @@ class Word_Association(Dataset):
         cue_tensor = torch.tensor(cue_list + [23001]*(total_len - len(cue_list)), dtype=torch.int32)
         assoc_tensor = torch.tensor(assoc_list + [23001]*(total_len - len(assoc_list)), dtype=torch.int32)
         label = torch.tensor([label], dtype=torch.int32)
-        print(cue_tensor, assoc_tensor, label)
+        #print(cue_tensor, assoc_tensor, label)
         return cue_tensor, assoc_tensor, label       
 
 def get_loader(args):
