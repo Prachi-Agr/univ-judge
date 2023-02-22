@@ -58,7 +58,8 @@ class Image_Captioning(Dataset):
         label = int(label)
 
         # change this to server folder 
-        img_folder = '/home/brandon/univ-judge/image_caption_data/images/'
+        #img_folder = '/home/brandon/univ-judge/image_caption_data/images/'
+        img_folder = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imgset/'
 
         # get image path from caption path/file name
         image_path = img_folder + caption_path.split('/')[-1].split('.')[0].split('_')[0]
@@ -163,10 +164,15 @@ def get_loader(args):
         shuffle_dataset = True
         random_seed= 42
 
-        # change paths to be correct
-        data = Image_Captioning('/home/brandon/univ-judge/image_caption_data/images', 
-        '/home/brandon/univ-judge/image_caption_data/captions', transform_train
-        )          
+        # change paths for server
+        #data = Image_Captioning('/home/brandon/univ-judge/image_caption_data/images', 
+        #'/home/brandon/univ-judge/image_caption_data/captions', transform_train
+        #)         
+
+        # change paths brandon laptop
+        data = Image_Captioning('/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imgset/', 
+        '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/image_caption_data/captions', transform_train
+        )  
 
         dataset_size = len(data)
         indices = list(range(dataset_size))
