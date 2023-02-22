@@ -268,6 +268,34 @@ class Transformer(nn.Module):
         # embedding_output = self.embeddings(input_ids)
         # print('embedding output:', embedding_output.size())
 
+        ''' Image captioning embedding input '''
+
+        input1 = input1.clone().detach().long()
+        input2 = input2.clone().detach().long()
+        separator = separator.clone().detach().long()
+
+        cue_embedding = self.embedding(input1)
+        assoc_embedding = self.embedding(input2)
+        sep_embedding = self.embedding(separator)
+        embeddings = torch.cat((cue_embedding, sep_embedding, assoc_embedding), dim=1)
+        # add cls token (see Embedding class) and position embedding
+        B = input1.shape[0]
+        cls_tokens = self.cls_token.expand(B, -1, -1)
+        # cls_tokens = cls_tokens.to('cuda')
+        embeddings = torch.cat((cls_tokens, embeddings), dim=1)
+        #print('embedding size after adding cls token', embeddings.size())
+        pos_tokens = torch.arange(0, 401+1, dtype=torch.int32)
+        pos_tokens = pos_tokens.expand(B, -1).cuda()
+        pos_tokens = pos_tokens.clone().detach().long()
+        pos_embedding = self.position_embeddings(pos_tokens)
+        #print('position embedding', pos_embedding.size())
+        embedding_output = embeddings + pos_embedding
+        #print('embedding size after adding pos embedding', embedding_output.size())
+        embedding_output = self.dropout(embedding_output)
+
+        encoded, attn_weights = self.encoder(embedding_output)
+        return encoded, attn_weights
+
         ''' Word association embedding input '''
         # RuntimeError: Expected tensor for argument #1 'indices' to have scalar type Long; but got torch.cuda.IntTensor instead (while checking arguments for embedding)
         input1 = input1.clone().detach().long()
