@@ -255,11 +255,12 @@ class Encoder(nn.Module):
 class Transformer(nn.Module):
     def __init__(self, config, img_size, vis):
         super(Transformer, self).__init__()
-        # self.embeddings = Embeddings(config, img_size=img_size)
+        self.image_embeddings = Embeddings(config, img_size=img_size)
         self.embedding = torch.nn.Embedding(23002, config.hidden_size)  # for word assoc
         self.encoder = Encoder(config, vis)
-        # self.position_embeddings = nn.Parameter(torch.zeros(1, 401+1, config.hidden_size))  # matrix of zeroes used in ViT , cue tokens + sep + assoc tokens = 401
-        self.position_embeddings = torch.nn.Embedding(401+1, config.hidden_size)
+        #self.position_embeddings = nn.Parameter(torch.zeros(1, 401+1, config.hidden_size))  # matrix of zeroes used in ViT , cue tokens + sep + assoc tokens = 401
+        #self.position_embeddings = torch.nn.Embedding(401+1, config.hidden_size) # word association
+        self.position_embeddings = torch.nn.Embedding(265+1, config.hidden_size) # word association
         self.cls_token = nn.Parameter(torch.zeros(1, 1, config.hidden_size))
         self.dropout = Dropout(config.transformer["dropout_rate"])
     # def forward(self, input_ids):
@@ -273,17 +274,17 @@ class Transformer(nn.Module):
         input2 = input2.clone().detach().long()
         separator = separator.clone().detach().long()
 
-        cue_embedding = self.embedding(input1)
-        assoc_embedding = self.embedding(input2)
+        image_embedding = self.image_embeddings.forward(input1)
+        caption_embedding = self.embedding(input2)
         sep_embedding = self.embedding(separator)
-        embeddings = torch.cat((cue_embedding, sep_embedding, assoc_embedding), dim=1)
+        embeddings = torch.cat((image_embedding, sep_embedding, caption_embedding), dim=1)
         # add cls token (see Embedding class) and position embedding
         B = input1.shape[0]
         cls_tokens = self.cls_token.expand(B, -1, -1)
         # cls_tokens = cls_tokens.to('cuda')
         embeddings = torch.cat((cls_tokens, embeddings), dim=1)
         #print('embedding size after adding cls token', embeddings.size())
-        pos_tokens = torch.arange(0, 401+1, dtype=torch.int32)
+        pos_tokens = torch.arange(0, 265+1, dtype=torch.int32)
         pos_tokens = pos_tokens.expand(B, -1).cuda()
         pos_tokens = pos_tokens.clone().detach().long()
         pos_embedding = self.position_embeddings(pos_tokens)
