@@ -58,7 +58,7 @@ class Image_Captioning(Dataset):
         label = int(label)
 
         # change this to server folder 
-        img_folder = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/img_set/'
+        img_folder = '/home/brandon/univ-judge/image_caption_data/images/'
 
         # get image path from caption path/file name
         image_path = img_folder + caption_path.split('/')[-1].split('.')[0].split('_')[0]
