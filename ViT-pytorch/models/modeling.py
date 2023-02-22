@@ -269,7 +269,6 @@ class Transformer(nn.Module):
         # print('embedding output:', embedding_output.size())
 
         ''' Image captioning embedding input '''
-
         input1 = input1.clone().detach().long()
         input2 = input2.clone().detach().long()
         separator = separator.clone().detach().long()
@@ -296,7 +295,7 @@ class Transformer(nn.Module):
         encoded, attn_weights = self.encoder(embedding_output)
         return encoded, attn_weights
 
-        ''' Word association embedding input '''
+        ''' Word association embedding input 
         # RuntimeError: Expected tensor for argument #1 'indices' to have scalar type Long; but got torch.cuda.IntTensor instead (while checking arguments for embedding)
         input1 = input1.clone().detach().long()
         input2 = input2.clone().detach().long()
@@ -322,7 +321,7 @@ class Transformer(nn.Module):
         embedding_output = self.dropout(embedding_output)
 
         encoded, attn_weights = self.encoder(embedding_output)
-        return encoded, attn_weights
+        return encoded, attn_weights'''
 
 
 class VisionTransformer(nn.Module):
