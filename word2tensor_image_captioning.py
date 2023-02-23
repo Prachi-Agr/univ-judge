@@ -22,22 +22,27 @@ imgcap_human_image_names = []
 imgcap_machine_tokens = []
 imgcap_human_machine_names = []
 
+counter = 0
+
 for img_name in list(captions.keys()):
     for i in range(len(captions[img_name]['human'])):
         human_caption = captions[img_name]['human'][i][0]
         human_caption_vec = sp.encode_as_ids(human_caption)
         imgcap_human_tokens.append(human_caption_vec)
         imgcap_human_image_names.append(img_name)
+        counter += 1
 
     for machine_name in list(captions[img_name]['machine'].keys()):
         machine_caption = captions[img_name]['machine'][machine_name]
         machine_caption_vec = sp.encode_as_ids(machine_caption)
         imgcap_machine_tokens.append(machine_caption_vec)
         imgcap_human_machine_names.append(img_name)
+        counter += 1
 
 for i in range(len(imgcap_human_tokens)):
-    torch.save(imgcap_human_tokens[i], '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/image_caption_data/' + imgcap_human_image_names[i] + '_' + str(1) + '.pt')
+    torch.save(imgcap_human_tokens[i], '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imagecaptiondata/' + imgcap_human_image_names[i] + '_' + str(i) + '_' + str(1) + '.pt')
 
 for i in range(len(imgcap_machine_tokens)):
-    torch.save(imgcap_machine_tokens[i], '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/image_caption_data/' + imgcap_human_machine_names[i] + '_' + str(0) + '.pt')
+    torch.save(imgcap_machine_tokens[i], '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imagecaptiondata/' + imgcap_human_machine_names[i] + '_' + str(i) + '_' + str(0) + '.pt')
 
+print(counter)

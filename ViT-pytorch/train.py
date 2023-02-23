@@ -260,7 +260,7 @@ def main():
     # Required parameters
     parser.add_argument("--name", required=True,
                         help="Name of this run. Used for monitoring.")
-    parser.add_argument("--dataset", choices=["cifar10", "cifar100","hymenoptera","word_assoc"], default="word_assoc",
+    parser.add_argument("--dataset", choices=["cifar10", "cifar100","hymenoptera","word_assoc","image_captioning"], default="word_assoc",
                         help="Which downstream task.")
     parser.add_argument("--model_type", choices=["ViT-B_16", "ViT-B_32", "ViT-L_16",
                                                  "ViT-L_32", "ViT-H_14", "R50-ViT-B_16"],
@@ -271,7 +271,7 @@ def main():
     parser.add_argument("--output_dir", default="output", type=str,
                         help="The output directory where checkpoints will be written.")
 
-    parser.add_argument("--img_size", default=224, type=int,
+    parser.add_argument("--img_size", default=1024, type=int,
                         help="Resolution size")
     parser.add_argument("--train_batch_size", default=64, type=int,
                         help="Total batch size for training.")
@@ -316,7 +316,7 @@ def main():
 
     # Setup CUDA, GPU & distributed training
     if args.local_rank == -1:
-        torch.cuda.set_device(1) # change this line to switch gpu on server. (0, 1, 2, 3)
+        #torch.cuda.set_device(1) # change this line to switch gpu on server. (0, 1, 2, 3)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         args.n_gpu = torch.cuda.device_count()
     else:  # Initializes the distributed backend which will take care of sychronizing nodes/GPUs

@@ -126,16 +126,16 @@ class Embeddings(nn.Module):
     def __init__(self, config, img_size, in_channels=3):
         super(Embeddings, self).__init__()
         self.hybrid = None
-        img_size = _pair(img_size)
+        self.img_size = _pair(img_size)
 
         if config.patches.get("grid") is not None:
             grid_size = config.patches["grid"]
-            patch_size = (img_size[0] // 16 // grid_size[0], img_size[1] // 16 // grid_size[1])
-            n_patches = (img_size[0] // 16) * (img_size[1] // 16)
+            patch_size = (self.img_size[0] // 16 // grid_size[0], self.img_size[1] // 16 // grid_size[1])
+            n_patches = (self.img_size[0] // 16) * (self.img_size[1] // 16)
             self.hybrid = True
         else:
             patch_size = _pair(config.patches["size"])
-            n_patches = (img_size[0] // patch_size[0]) * (img_size[1] // patch_size[1])
+            n_patches = (self.img_size[0] // patch_size[0]) * (self.img_size[1] // patch_size[1])
             self.hybrid = False
 
         if self.hybrid:
@@ -152,6 +152,7 @@ class Embeddings(nn.Module):
         self.dropout = Dropout(config.transformer["dropout_rate"])
 
     def forward(self, x):
+        x = x.float()
         B = x.shape[0]
         cls_tokens = self.cls_token.expand(B, -1, -1)
 
@@ -167,6 +168,8 @@ class Embeddings(nn.Module):
         print(x.size())
         x = torch.cat((cls_tokens, x), dim=1)
         print(x.size())
+        print(self.position_embeddings.size())
+        print("image size: ", self.img_size)
         embeddings = x + self.position_embeddings
         embeddings = self.dropout(embeddings)
         print('embedding size',embeddings.size())
@@ -326,7 +329,7 @@ class Transformer(nn.Module):
 
 
 class VisionTransformer(nn.Module):
-    def __init__(self, config, img_size=224, num_classes=21843, zero_head=False, vis=False):
+    def __init__(self, config, img_size=1024, num_classes=21843, zero_head=False, vis=False):
         super(VisionTransformer, self).__init__()
         self.num_classes = num_classes
         self.zero_head = zero_head

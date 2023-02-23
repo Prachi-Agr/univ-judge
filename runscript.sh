@@ -11,5 +11,6 @@ module load python/3.6.3-fasrc01
 module load cuda
 module load cudnn
 source activate vit
-python ViT-pytorch/train.py --name wordassoc_prototype_ViT-B_16 --dataset word_assoc --model_type ViT-B_16 --local_rank 1
+python ViT-pytorch/train.py --name wordassoc_prototype_ViT-B_16 --dataset word_assoc --model_type ViT-B_16 
+python3 ViT-pytorch/train.py --name wordassoc_prototype_ViT-B_16 --dataset image_captioning --model_type ViT-B_16 
 # python word2tensor.py
