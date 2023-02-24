@@ -172,16 +172,16 @@ def get_loader(args):
         #imgpath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imgset/'
         #cappath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imagecaptiondata/'
 
-        #imgpath = '/content/gdrive/MyDrive/Turing/imgset/'
-        #cappath = '/content/gdrive/MyDrive/Turing/imagecaptiondata/'
+        imgpath = '/content/gdrive/MyDrive/Turing/imgset/'
+        cappath = '/content/gdrive/MyDrive/Turing/imagecaptiondata/'
 
-        imgpath = '/home/brandon/univ-judge/imgset/'
-        cappath = '/home/brandon/univ-judge/imagecaptiondata/'
+        #mgpath = '/home/brandon/univ-judge/imgset/'
+        #cappath = '/home/brandon/univ-judge/imagecaptiondata/'
 
-        data = Image_Captioning(imgpath, cappath, transform_train)  
+        data = Image_Captioning('/content/gdrive/MyDrive/Turing/imgset/', '/content/gdrive/MyDrive/Turing/imagecaptiondata/', transform_train)  
 
         dataset_size = len(data)
-        #print("dataset size", dataset_size)
+        print("dataset size", dataset_size)
 
         indices = list(range(dataset_size))
         split = int(np.floor(validation_split * dataset_size))
@@ -203,7 +203,7 @@ def get_loader(args):
                              batch_size=batch_size, 
                              sampler=valid_sampler,
                              pin_memory=True)   
-
+        print("Data loaded!")
         return train_loader, test_loader
         
     else:
