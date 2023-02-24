@@ -158,21 +158,21 @@ class Embeddings(nn.Module):
 
         if self.hybrid:
             x = self.hybrid_model(x)
-        print('within embedding class')
-        print(x.size())
+        #print('within embedding class')
+        #print(x.size())
         x = self.patch_embeddings(x)
-        print('patch embedding size', x.size())
+        #print('patch embedding size', x.size())
         x = x.flatten(2)
-        print(x.size())
+        #print(x.size())
         x = x.transpose(-1, -2)
-        print(x.size())
+        #print(x.size())
         x = torch.cat((cls_tokens, x), dim=1)
-        print(x.size())
-        print(self.position_embeddings.size())
-        print("image size: ", self.img_size)
+        #print(x.size())
+        #print(self.position_embeddings.size())
+        #print("image size: ", self.img_size)
         embeddings = x + self.position_embeddings
         embeddings = self.dropout(embeddings)
-        print('embedding size',embeddings.size())
+        #print('embedding size',embeddings.size())
         return embeddings
 
 
@@ -263,7 +263,7 @@ class Transformer(nn.Module):
         self.encoder = Encoder(config, vis)
         #self.position_embeddings = nn.Parameter(torch.zeros(1, 401+1, config.hidden_size))  # matrix of zeroes used in ViT , cue tokens + sep + assoc tokens = 401
         #self.position_embeddings = torch.nn.Embedding(401+1, config.hidden_size) # word association
-        self.position_embeddings = torch.nn.Embedding(265+1, config.hidden_size) # word association
+        self.position_embeddings = torch.nn.Embedding(4097+200+1+1, config.hidden_size) # word association
         self.cls_token = nn.Parameter(torch.zeros(1, 1, config.hidden_size))
         self.dropout = Dropout(config.transformer["dropout_rate"])
     # def forward(self, input_ids):
@@ -287,8 +287,11 @@ class Transformer(nn.Module):
         # cls_tokens = cls_tokens.to('cuda')
         embeddings = torch.cat((cls_tokens, embeddings), dim=1)
         #print('embedding size after adding cls token', embeddings.size())
-        pos_tokens = torch.arange(0, 265+1, dtype=torch.int32)
-        pos_tokens = pos_tokens.expand(B, -1).cuda()
+        pos_tokens = torch.arange(0, 4097+200+1+1, dtype=torch.int32)
+
+        # uncomment if gpu
+        #pos_tokens = pos_tokens.expand(B, -1).cuda()
+        pos_tokens = pos_tokens.expand(B, -1)
         pos_tokens = pos_tokens.clone().detach().long()
         pos_embedding = self.position_embeddings(pos_tokens)
         #print('position embedding', pos_embedding.size())
