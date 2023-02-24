@@ -11,6 +11,7 @@ import numpy as np
 from datetime import timedelta
 
 import torch
+torch.cuda.empty_cache()
 import torch.distributed as dist
 from torch.utils.tensorboard import SummaryWriter
 # from apex import amp
