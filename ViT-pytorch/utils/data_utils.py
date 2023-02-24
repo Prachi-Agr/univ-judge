@@ -169,14 +169,14 @@ def get_loader(args):
         random_seed= 42
 
 
-        imgpath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imgset/'
-        cappath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imagecaptiondata/'
+        #imgpath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imgset/'
+        #cappath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imagecaptiondata/'
 
         #imgpath = '/content/gdrive/MyDrive/Turing/imgset/'
         #cappath = '/content/gdrive/MyDrive/Turing/imagecaptiondata/'
 
-        #imgpath = '/home/brandon/univ-judge/imgset/'
-        #cappath = '/home/brandon/univ-judge/imagecaptiondata/'
+        imgpath = '/home/brandon/univ-judge/imgset/'
+        cappath = '/home/brandon/univ-judge/imagecaptiondata/'
 
         data = Image_Captioning(imgpath, cappath, transform_train)  
 
