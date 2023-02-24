@@ -168,9 +168,17 @@ def get_loader(args):
         shuffle_dataset = True
         random_seed= 42
 
-        data = Image_Captioning('/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imgset/', 
-        '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imagecaptiondata/', transform_train
-        )  
+
+        #imgpath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imgset/'
+        #cappath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imagecaptiondata/'
+
+        #imgpath = '/content/gdrive/MyDrive/Turing/imgset/'
+        #cappath = '/content/gdrive/MyDrive/Turing/imagecaptiondata/'
+
+        imgpath = '/home/brandon/univ-judge/imgset/'
+        cappath = '/home/brandon/univ-judge/imagecaptiondata/'
+
+        data = Image_Captioning(imgpath, cappath, transform_train)  
 
         dataset_size = len(data)
         #print("dataset size", dataset_size)
