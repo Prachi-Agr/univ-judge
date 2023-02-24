@@ -290,8 +290,8 @@ class Transformer(nn.Module):
         pos_tokens = torch.arange(0, 4097+200+1+1, dtype=torch.int32)
 
         # uncomment if gpu
-        #pos_tokens = pos_tokens.expand(B, -1).cuda()
-        pos_tokens = pos_tokens.expand(B, -1)
+        pos_tokens = pos_tokens.expand(B, -1).cuda()
+        #pos_tokens = pos_tokens.expand(B, -1)
         pos_tokens = pos_tokens.clone().detach().long()
         pos_embedding = self.position_embeddings(pos_tokens)
         #print('position embedding', pos_embedding.size())
