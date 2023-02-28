@@ -157,21 +157,21 @@ class Embeddings(nn.Module):
         cls_tokens = self.cls_token.expand(B, -1, -1)
 
         if self.hybrid:
-            x = self.hybrid_model(x).detach()
+            x = self.hybrid_model(x)
         #print('within embedding class')
         #print(x.size())
-        x = self.patch_embeddings(x).detach()
+        x = self.patch_embeddings(x)
         #print('patch embedding size', x.size())
         x = x.flatten(2)
         #print(x.size())
-        x = x.transpose(-1, -2).detach()
+        x = x.transpose(-1, -2)
         #print(x.size())
-        x = torch.cat((cls_tokens, x), dim=1).detach()
+        x = torch.cat((cls_tokens, x), dim=1)
         #print(x.size())
         #print(self.position_embeddings.size())
         #print("image size: ", self.img_size)
         embeddings = x + self.position_embeddings
-        embeddings = self.dropout(embeddings).detach()
+        embeddings = self.dropout(embeddings)
         #print('embedding size',embeddings.size())
         return embeddings
 
@@ -187,13 +187,13 @@ class Block(nn.Module):
 
     def forward(self, x):
         h = x
-        x = self.attention_norm(x).detach()
+        x = self.attention_norm(x)
         x, weights = self.attn(x)
         x = x + h
 
         h = x
-        x = self.ffn_norm(x).detach()
-        x = self.ffn(x).detach()
+        x = self.ffn_norm(x)
+        x = self.ffn(x)
         x = x + h
         return x, weights
 
@@ -251,9 +251,9 @@ class Encoder(nn.Module):
         for layer_block in self.layer:
             states, weights = layer_block(states)
             if self.vis:
-                attn_weights.append(weights.detach().cpu().numpy())
+                attn_weights.append(weights)
             #hidden_sts.append(states.detach().cpu().numpy())
-        final_raw_state = states.detach().cpu().numpy()
+        final_raw_state = states
         encoded = self.encoder_norm(states)
         # list of all hidden states and last element is layer norm applied on final layer's hidden state
         #hidden_sts.append(encoded.detach().cpu().numpy())

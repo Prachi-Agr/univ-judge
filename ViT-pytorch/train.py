@@ -366,6 +366,8 @@ def main():
 
     # Model & Tokenizer Setup
     args, model = setup(args)
+    model = model.to(device)
+    
 
     # Training
     #train(args, model)
