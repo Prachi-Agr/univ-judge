@@ -300,7 +300,7 @@ class Transformer(nn.Module):
         #print('embedding size after adding pos embedding', embedding_output.size())
         embedding_output = self.dropout(embedding_output).detach()
 
-        encoded, attn_weights, final_raw_state = self.encoder(embedding_output).detach()
+        encoded, attn_weights, final_raw_state = self.encoder(embedding_output)
         return encoded, attn_weights, final_raw_state
 
         ''' Word association embedding input 
