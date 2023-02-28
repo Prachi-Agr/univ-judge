@@ -7,6 +7,7 @@ import argparse
 import os
 import random
 import numpy as np
+import json
 
 from datetime import timedelta
 
@@ -255,6 +256,30 @@ def train(args, model):
     logger.info("Best Accuracy: \t%f" % best_acc)
     logger.info("End Training!")
 
+def retrieve_embeddings(args, model, data_loader):
+    epoch_iterator = tqdm(data_loader,
+                          desc="Retrieving Embeddings... ",
+                          bar_format="{l_bar}{r_bar}",
+                          dynamic_ncols=True,
+                          disable=args.local_rank not in [-1, 0])
+    model.eval()
+    transformer_embeddings = {}
+    transformer_attention_weights = {}
+
+    for step, batch in enumerate(epoch_iterator):
+        batch = tuple(t.to(args.device) for t in batch)
+        cue, assoc, y = batch
+        num_embeddings = 23002 # 23000 + sep + padding
+        separator = torch.ones((1), dtype=torch.int32) * (num_embeddings-2)
+        separator = separator.expand(cue.shape[0], -1)
+        separator = separator.to(args.device)
+
+        with torch.no_grad():
+            logits, attn_weights, final_state = model(cue, assoc, separator)
+            transformer_embeddings[batch] = final_state
+            transformer_attention_weights[batch] = attn_weights
+
+    return transformer_embeddings, transformer_attention_weights
 
 def main():
     parser = argparse.ArgumentParser()
@@ -343,8 +368,13 @@ def main():
     args, model = setup(args)
 
     # Training
-    train(args, model)
+    #train(args, model)
+    train_loader, test_loader = get_loader(args)
+    torch.save(train_loader, '/home/brandon/univ-judge/dataloader.pth')
+    transformer_embeddings, transformer_attention_weights = retrieve_embeddings(args, model, train_loader)
 
+    with open('/home/brandon/univ-judge/transformer_embeddings.json', 'w') as fp:
+        json.dump(transformer_embeddings, fp)
 
 if __name__ == "__main__":
     main()

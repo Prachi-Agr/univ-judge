@@ -163,8 +163,8 @@ def get_loader(args):
         return train_loader, test_loader
         
     elif args.dataset == "image_captioning":
-        batch_size=4
-        validation_split = .25
+        batch_size=1
+        validation_split = 0
         shuffle_dataset = True
         random_seed= 42
 
@@ -172,13 +172,13 @@ def get_loader(args):
         #imgpath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imgset/'
         #cappath = '/Users/brandontang/Desktop/Harvard/Spring 2023/Thesis/imagecaptiondata/'
 
-        imgpath = '/content/gdrive/MyDrive/Turing/imgset/'
-        cappath = '/content/gdrive/MyDrive/Turing/imagecaptiondata/'
+        #imgpath = '/content/gdrive/MyDrive/Turing/imgset/'
+        #cappath = '/content/gdrive/MyDrive/Turing/imagecaptiondata/'
 
-        #mgpath = '/home/brandon/univ-judge/imgset/'
-        #cappath = '/home/brandon/univ-judge/imagecaptiondata/'
+        imgpath = '/home/brandon/univ-judge/imgset/'
+        cappath = '/home/brandon/univ-judge/imagecaptiondata/'
 
-        data = Image_Captioning('/content/gdrive/MyDrive/Turing/imgset/', '/content/gdrive/MyDrive/Turing/imagecaptiondata/', transform_train)  
+        data = Image_Captioning(imgpath, cappath, transform_train)  
 
         dataset_size = len(data)
         print("dataset size", dataset_size)

@@ -157,21 +157,21 @@ class Embeddings(nn.Module):
         cls_tokens = self.cls_token.expand(B, -1, -1)
 
         if self.hybrid:
-            x = self.hybrid_model(x)
+            x = self.hybrid_model(x).detach()
         #print('within embedding class')
         #print(x.size())
-        x = self.patch_embeddings(x)
+        x = self.patch_embeddings(x).detach()
         #print('patch embedding size', x.size())
         x = x.flatten(2)
         #print(x.size())
-        x = x.transpose(-1, -2)
+        x = x.transpose(-1, -2).detach()
         #print(x.size())
-        x = torch.cat((cls_tokens, x), dim=1)
+        x = torch.cat((cls_tokens, x), dim=1).detach()
         #print(x.size())
         #print(self.position_embeddings.size())
         #print("image size: ", self.img_size)
         embeddings = x + self.position_embeddings
-        embeddings = self.dropout(embeddings)
+        embeddings = self.dropout(embeddings).detach()
         #print('embedding size',embeddings.size())
         return embeddings
 
@@ -187,13 +187,13 @@ class Block(nn.Module):
 
     def forward(self, x):
         h = x
-        x = self.attention_norm(x)
+        x = self.attention_norm(x).detach()
         x, weights = self.attn(x)
         x = x + h
 
         h = x
-        x = self.ffn_norm(x)
-        x = self.ffn(x)
+        x = self.ffn_norm(x).detach()
+        x = self.ffn(x).detach()
         x = x + h
         return x, weights
 
@@ -245,14 +245,19 @@ class Encoder(nn.Module):
             layer = Block(config, vis)
             self.layer.append(copy.deepcopy(layer))
 
-    def forward(self, hidden_states):
+    def forward(self, states):
         attn_weights = []
+        #hidden_sts = []
         for layer_block in self.layer:
-            hidden_states, weights = layer_block(hidden_states)
+            states, weights = layer_block(states)
             if self.vis:
-                attn_weights.append(weights)
-        encoded = self.encoder_norm(hidden_states)
-        return encoded, attn_weights
+                attn_weights.append(weights.detach().cpu().numpy())
+            #hidden_sts.append(states.detach().cpu().numpy())
+        final_raw_state = states.detach().cpu().numpy()
+        encoded = self.encoder_norm(states)
+        # list of all hidden states and last element is layer norm applied on final layer's hidden state
+        #hidden_sts.append(encoded.detach().cpu().numpy())
+        return encoded, attn_weights, final_raw_state
 
 
 class Transformer(nn.Module):
@@ -290,8 +295,8 @@ class Transformer(nn.Module):
         pos_tokens = torch.arange(0, 4097+200+1+1, dtype=torch.int32).detach()
 
         # uncomment if gpu
-        pos_tokens = pos_tokens.expand(B, -1).cuda().detach()
-        #pos_tokens = pos_tokens.expand(B, -1)
+        #pos_tokens = pos_tokens.expand(B, -1).cuda().detach()
+        pos_tokens = pos_tokens.expand(B, -1).detach()
         pos_tokens = pos_tokens.clone().detach().long()
         pos_embedding = self.position_embeddings(pos_tokens).detach()
         #print('position embedding', pos_embedding.size())
@@ -299,9 +304,9 @@ class Transformer(nn.Module):
         #print('embedding size after adding pos embedding', embedding_output.size())
         embedding_output = self.dropout(embedding_output).detach()
 
-        encoded, attn_weights = self.encoder(embedding_output).detach()
-        return encoded, attn_weights
-
+        encoded, attn_weights, final_state = self.encoder(embedding_output)
+        return encoded, attn_weights, final_state
+        
         ''' Word association embedding input 
         # RuntimeError: Expected tensor for argument #1 'indices' to have scalar type Long; but got torch.cuda.IntTensor instead (while checking arguments for embedding)
         input1 = input1.clone().detach().long()
@@ -337,26 +342,26 @@ class VisionTransformer(nn.Module):
         self.num_classes = num_classes
         self.zero_head = zero_head
         self.classifier = config.classifier
-
         self.transformer = Transformer(config, img_size, vis)
         self.head = Linear(config.hidden_size, num_classes)
+
 
     # def forward(self, x, labels=None):
     def forward(self, input1, input2, sep, labels=None): #check labels type passed
         # x, attn_weights = self.transformer(x)
         num_embeddings = 23002
-        x, attn_weights = self.transformer(input1, input2, sep, num_embeddings)
+        x, attn_weights, final_state = self.transformer(input1, input2, sep, num_embeddings)
         logits = self.head(x[:, 0])
-        #print('logits', logits.size(), logits)
-        if labels is not None:
-            labels = labels.long()
-            # print('labels', labels.size(), labels)
-            # print('logits view', logits.view(-1, self.num_classes), 'labels', labels.view(-1) )
-            loss_fct = CrossEntropyLoss()
-            loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
-            return loss
-        else:
-            return logits, attn_weights
+        print('logits', logits.size(), logits)
+        #if labels is not None:
+        #    labels = labels.long()
+        #    # print('labels', labels.size(), labels)
+        #    # print('logits view', logits.view(-1, self.num_classes), 'labels', labels.view(-1) )
+        #    loss_fct = CrossEntropyLoss()
+        #    loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
+        #    return loss
+        #else:
+        return logits, attn_weights, final_state
 
     def load_from(self, weights):
         with torch.no_grad():
