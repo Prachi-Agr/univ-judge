@@ -176,7 +176,7 @@ def get_loader(args):
         #cappath = '/content/gdrive/MyDrive/Turing/imagecaptiondata/'
 
         imgpath = '/home/brandon/univ-judge/imgset/'
-        cappath = '/home/brandon/univ-judge/imagecaptiondata/'
+        cappath = '/home/brandon/univ-judge/imagecaptiondata1/'
 
         data = Image_Captioning(imgpath, cappath, transform_train)  
 
