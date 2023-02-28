@@ -275,8 +275,8 @@ def retrieve_embeddings(args, model, data_loader):
         separator = separator.to(args.device)
 
         with torch.no_grad():
-            logits, attn_weights, final_state = model(cue, assoc, separator)
-            transformer_embeddings[batch] = final_state
+            logits, attn_weights, final_raw_state = model(cue, assoc, separator)
+            transformer_embeddings[batch] = final_raw_state
             transformer_attention_weights[batch] = attn_weights
 
     return transformer_embeddings, transformer_attention_weights
@@ -368,7 +368,6 @@ def main():
     args, model = setup(args)
     model = model.to(device)
     
-
     # Training
     #train(args, model)
     train_loader, test_loader = get_loader(args)

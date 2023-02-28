@@ -247,16 +247,12 @@ class Encoder(nn.Module):
 
     def forward(self, states):
         attn_weights = []
-        #hidden_sts = []
         for layer_block in self.layer:
             states, weights = layer_block(states)
             if self.vis:
                 attn_weights.append(weights)
-            #hidden_sts.append(states.detach().cpu().numpy())
         final_raw_state = states
         encoded = self.encoder_norm(states)
-        # list of all hidden states and last element is layer norm applied on final layer's hidden state
-        #hidden_sts.append(encoded.detach().cpu().numpy())
         return encoded, attn_weights, final_raw_state
 
 
@@ -295,8 +291,8 @@ class Transformer(nn.Module):
         pos_tokens = torch.arange(0, 4097+200+1+1, dtype=torch.int32).detach()
 
         # uncomment if gpu
-        #pos_tokens = pos_tokens.expand(B, -1).cuda().detach()
-        pos_tokens = pos_tokens.expand(B, -1).detach()
+        pos_tokens = pos_tokens.expand(B, -1).cuda().detach()
+        #pos_tokens = pos_tokens.expand(B, -1)
         pos_tokens = pos_tokens.clone().detach().long()
         pos_embedding = self.position_embeddings(pos_tokens).detach()
         #print('position embedding', pos_embedding.size())
@@ -304,15 +300,14 @@ class Transformer(nn.Module):
         #print('embedding size after adding pos embedding', embedding_output.size())
         embedding_output = self.dropout(embedding_output).detach()
 
-        encoded, attn_weights, final_state = self.encoder(embedding_output)
-        return encoded, attn_weights, final_state
-        
+        encoded, attn_weights, final_raw_state = self.encoder(embedding_output).detach()
+        return encoded, attn_weights, final_raw_state
+
         ''' Word association embedding input 
         # RuntimeError: Expected tensor for argument #1 'indices' to have scalar type Long; but got torch.cuda.IntTensor instead (while checking arguments for embedding)
         input1 = input1.clone().detach().long()
         input2 = input2.clone().detach().long()
         separator = separator.clone().detach().long()
-
         cue_embedding = self.embedding(input1)
         assoc_embedding = self.embedding(input2)
         sep_embedding = self.embedding(separator)
@@ -331,7 +326,6 @@ class Transformer(nn.Module):
         embedding_output = embeddings + pos_embedding
         #print('embedding size after adding pos embedding', embedding_output.size())
         embedding_output = self.dropout(embedding_output)
-
         encoded, attn_weights = self.encoder(embedding_output)
         return encoded, attn_weights'''
 
@@ -342,26 +336,26 @@ class VisionTransformer(nn.Module):
         self.num_classes = num_classes
         self.zero_head = zero_head
         self.classifier = config.classifier
+
         self.transformer = Transformer(config, img_size, vis)
         self.head = Linear(config.hidden_size, num_classes)
-
 
     # def forward(self, x, labels=None):
     def forward(self, input1, input2, sep, labels=None): #check labels type passed
         # x, attn_weights = self.transformer(x)
         num_embeddings = 23002
-        x, attn_weights, final_state = self.transformer(input1, input2, sep, num_embeddings)
+        x, attn_weights, final_raw_state = self.transformer(input1, input2, sep, num_embeddings)
         logits = self.head(x[:, 0])
-        print('logits', logits.size(), logits)
-        #if labels is not None:
-        #    labels = labels.long()
-        #    # print('labels', labels.size(), labels)
-        #    # print('logits view', logits.view(-1, self.num_classes), 'labels', labels.view(-1) )
-        #    loss_fct = CrossEntropyLoss()
-        #    loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
-        #    return loss
-        #else:
-        return logits, attn_weights, final_state
+        #print('logits', logits.size(), logits)
+        if labels is not None:
+            labels = labels.long()
+            # print('labels', labels.size(), labels)
+            # print('logits view', logits.view(-1, self.num_classes), 'labels', labels.view(-1) )
+            loss_fct = CrossEntropyLoss()
+            loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
+            return loss
+        else:
+            return logits, attn_weights, final_raw_state
 
     def load_from(self, weights):
         with torch.no_grad():
