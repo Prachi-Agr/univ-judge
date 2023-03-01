@@ -276,10 +276,13 @@ def retrieve_embeddings(args, model, data_loader):
             separator = separator.to(args.device)
 
             final_state = model(image, caption, separator)[2]
-            transformer_embeddings[step] = (final_state.detach().cpu().numpy().tolist(), y.detach().cpu().numpy().tolist())
+            
+            # change this path
+            torch.save(final_state.detach().cpu().numpy().tolist(), '/content/drive/MyDrive/Turing/extracted_embeddings/'+str(counter)+'_'+str(y.item())+'.pt')
+            
+            print("label: ", y.item())
             print("Embedding Shape: ", final_state.shape)
-            #print("torch.cuda.memory_allocated before: ", torch.cuda.memory_allocated())
-            #print("torch.cuda.memory_reserved before: ", torch.cuda.memory_reserved())
+
             del final_state
             for t in batch:
                 del t
@@ -290,14 +293,6 @@ def retrieve_embeddings(args, model, data_loader):
             torch.cuda.empty_cache()
             gc.collect()
 
-            #print("torch.cuda.memory_allocated after: ",torch.cuda.memory_allocated())
-            #print("torch.cuda.memory_reserved after: ", torch.cuda.memory_reserved())
-            #transformer_attention_weights[batch] = attn_weights
-            if counter % 100 == 0:
-                with open('/home/brandon/univ-judge/transformer_embeddings_{}.json'.format(counter), 'w') as fp:
-                    json.dump(transformer_embeddings, fp)
-                #transformer_embeddings = {}
-            print("Counter: ", counter)
             counter += 1
     return transformer_embeddings
 
@@ -313,7 +308,7 @@ def main():
                                                  "ViT-L_32", "ViT-H_14", "R50-ViT-B_16"],
                         default="ViT-B_16",
                         help="Which variant to use.")
-    # need to add pretrained model here
+    # need to add pretrained model herex
     parser.add_argument("--pretrained_dir", type=str, default="checkpoint/ViT-B_16.npz",
                         help="Where to search for pretrained ViT models.")
     parser.add_argument("--output_dir", default="output", type=str,
