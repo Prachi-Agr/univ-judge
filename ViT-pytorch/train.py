@@ -63,7 +63,7 @@ def setup(args):
     # num_classes = 10 if args.dataset == "cifar10" else 100
     num_classes = 2
     model = VisionTransformer(config, args.img_size, zero_head=True, num_classes=num_classes)
-    # model.load_from(np.load(args.pretrained_dir))
+    model.load_from(np.load(args.pretrained_dir))
     model.to(args.device)
     num_params = count_parameters(model)
 
@@ -264,22 +264,43 @@ def retrieve_embeddings(args, model, data_loader):
                           disable=args.local_rank not in [-1, 0])
     model.eval()
     transformer_embeddings = {}
-    transformer_attention_weights = {}
+    #transformer_attention_weights = {}
+    counter = 1
+    with torch.no_grad():
+        for step, batch in enumerate(epoch_iterator):
+            batch = tuple(t.to(args.device) for t in batch)
+            image, caption, y = batch
+            num_embeddings = 23002 # 23000 + sep + padding
+            separator = torch.ones((1), dtype=torch.int32) * (num_embeddings-2)
+            separator = separator.expand(caption.shape[0], -1)
+            separator = separator.to(args.device)
 
-    for step, batch in enumerate(epoch_iterator):
-        batch = tuple(t.to(args.device) for t in batch)
-        cue, assoc, y = batch
-        num_embeddings = 23002 # 23000 + sep + padding
-        separator = torch.ones((1), dtype=torch.int32) * (num_embeddings-2)
-        separator = separator.expand(cue.shape[0], -1)
-        separator = separator.to(args.device)
+            final_state = model(image, caption, separator)[2]
+            transformer_embeddings[step] = (final_state.detach().cpu().numpy().tolist(), y.detach().cpu().numpy().tolist())
+            print("Embedding Shape: ", final_state.shape)
+            #print("torch.cuda.memory_allocated before: ", torch.cuda.memory_allocated())
+            #print("torch.cuda.memory_reserved before: ", torch.cuda.memory_reserved())
+            del final_state
+            for t in batch:
+                del t
+            del image
+            del caption
+            del separator
+            del y
+            torch.cuda.empty_cache()
+            gc.collect()
 
-        with torch.no_grad():
-            logits, attn_weights, final_raw_state = model(cue, assoc, separator)
-            transformer_embeddings[batch] = final_raw_state
-            transformer_attention_weights[batch] = attn_weights
+            #print("torch.cuda.memory_allocated after: ",torch.cuda.memory_allocated())
+            #print("torch.cuda.memory_reserved after: ", torch.cuda.memory_reserved())
+            #transformer_attention_weights[batch] = attn_weights
+            if counter % 100 == 0:
+                with open('/home/brandon/univ-judge/transformer_embeddings_{}.json'.format(counter), 'w') as fp:
+                    json.dump(transformer_embeddings, fp)
+                #transformer_embeddings = {}
+            print("Counter: ", counter)
+            counter += 1
+    return transformer_embeddings
 
-    return transformer_embeddings, transformer_attention_weights
 
 def main():
     parser = argparse.ArgumentParser()
@@ -292,6 +313,7 @@ def main():
                                                  "ViT-L_32", "ViT-H_14", "R50-ViT-B_16"],
                         default="ViT-B_16",
                         help="Which variant to use.")
+    # need to add pretrained model here
     parser.add_argument("--pretrained_dir", type=str, default="checkpoint/ViT-B_16.npz",
                         help="Where to search for pretrained ViT models.")
     parser.add_argument("--output_dir", default="output", type=str,
@@ -367,12 +389,12 @@ def main():
     # Model & Tokenizer Setup
     args, model = setup(args)
     model = model.to(device)
-    
+
     # Training
     #train(args, model)
     train_loader, test_loader = get_loader(args)
     torch.save(train_loader, '/home/brandon/univ-judge/dataloader.pth')
-    transformer_embeddings, transformer_attention_weights = retrieve_embeddings(args, model, train_loader)
+    transformer_embeddings = retrieve_embeddings(args, model, train_loader)
 
     with open('/home/brandon/univ-judge/transformer_embeddings.json', 'w') as fp:
         json.dump(transformer_embeddings, fp)

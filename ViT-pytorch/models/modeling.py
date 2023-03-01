@@ -249,8 +249,8 @@ class Encoder(nn.Module):
         attn_weights = []
         for layer_block in self.layer:
             states, weights = layer_block(states)
-            if self.vis:
-                attn_weights.append(weights)
+            #if self.vis:
+            #    attn_weights.append(weights)
         final_raw_state = states
         encoded = self.encoder_norm(states)
         return encoded, attn_weights, final_raw_state
@@ -347,13 +347,13 @@ class VisionTransformer(nn.Module):
         x, attn_weights, final_raw_state = self.transformer(input1, input2, sep, num_embeddings)
         logits = self.head(x[:, 0])
         #print('logits', logits.size(), logits)
-        if labels is not None:
-            labels = labels.long()
+        #if labels is not None:
+        #    labels = labels.long()
             # print('labels', labels.size(), labels)
             # print('logits view', logits.view(-1, self.num_classes), 'labels', labels.view(-1) )
-            loss_fct = CrossEntropyLoss()
-            loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
-            return loss
+        #    loss_fct = CrossEntropyLoss()
+        #    loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
+        #    return loss
         else:
             return logits, attn_weights, final_raw_state
 
